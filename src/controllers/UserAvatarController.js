@@ -24,7 +24,7 @@ class UserAvatarController {
 
     await knex("users").update(user).where({ id: user_id })
 
-    return response.status(200).json(user)
+    return response.status(200).json(user.avatar)
   }
 };
 
