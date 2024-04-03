@@ -5,3 +5,5 @@ database.db
 tmp/
 
 tmp/uploads
+
+.env
