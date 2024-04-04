@@ -6,8 +6,10 @@ const AppError = require("./utils/AppError")
 const routes = require("./routes");
 const express = require("express");
 const cors = require("cors");
+const knex = require("./database/knex")
 
 migrationsRun()
+knex.migrate.latest()
 
 const app = express();
 
