@@ -2,7 +2,7 @@ exports.up = async knex => {
   const exist = await knex.schema.hasTable("notes")
 
   if(!exist){
-    knex.schema.createTable("notes", table => {
+    await knex.schema.createTable("notes", table => {
       table.increments("id")
       table.text("title")
       table.text("description")
