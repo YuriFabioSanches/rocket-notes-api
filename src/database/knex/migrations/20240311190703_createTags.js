@@ -1,4 +1,4 @@
-exports.up = knex => knex.schema.createTable("tags", table => {
+exports.up = knex => knex.schema.createTableIfNotExists("tags", table => {
   table.increments("id")
   table.text("name").notNullable()
 
@@ -6,4 +6,4 @@ exports.up = knex => knex.schema.createTable("tags", table => {
   table.integer("user_id").references("id").inTable("users")
 });
 
-exports.down = knex => knex.schema.dropTable("tags");
+exports.down = knex => knex.schema.dropTableIfExists("tags");
