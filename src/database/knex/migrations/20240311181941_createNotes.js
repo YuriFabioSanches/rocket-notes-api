@@ -1,12 +1,16 @@
-exports.up = knex => knex.schema.createTableIfNotExists("notes", table => {
-  table.increments("id")
-  table.text("title")
-  table.text("description")
-  table.integer("user_id").references("id").inTable("users")
+exports.up = async knex => {
+  const exist = await knex.schema.hasTable("notes")
 
-  table.timestamp("created_at").default(knex.fn.now())
-  table.timestamp("updated_at").default(knex.fn.now())
+  if(!exist){
+    knex.schema.createTable("notes", table => {
+      table.increments("id")
+      table.text("title")
+      table.text("description")
+      table.integer("user_id").references("id").inTable("users")
+      table.timestamp("created_at").default(knex.fn.now())
+      table.timestamp("updated_at").default(knex.fn.now())
+    });
+  }
+} 
 
-});
-
-exports.down = knex => knex.schema.dropTableIfExists("notes");
+exports.down = async knex => await knex.schema.dropTableIfExists("notes");
