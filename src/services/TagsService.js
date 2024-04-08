@@ -3,8 +3,8 @@ class TagsService {
     this.tagsRepository = tagsRepository
   }
 
-  async getAllTags(user_id){
-    return await this.tagsRepository.getAllTags(user_id)
+  async getAllTagsByUserId(user_id){
+    return await this.tagsRepository.getAllTagsByUserId(user_id)
   }
 }
 

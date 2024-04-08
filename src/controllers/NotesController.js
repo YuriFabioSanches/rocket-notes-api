@@ -1,95 +1,51 @@
 const knex = require("../database/knex")
+const NotesService = require("../services/NotesService")
+
+const NotesRepository = require("../repositories/NotesRepository")
+const TagsRepository = require("../repositories/TagsRepository")
+const LinksRepository = require("../repositories/LinksRepository")
 
 class NotesController {
   async index(request, response) {
     const { title, tags  } = request.query
     const user_id = request.user.id
+
+    const notesRepository = new NotesRepository()
+    const tagsRepository = new TagsRepository()
+
+    const notesService = new NotesService(notesRepository, tagsRepository)
+
+    const notes = await notesService.getAllNotesFiltered({ user_id, title, tags })
     
-    let notes
-
-    if(tags){
-      const filterTags = tags.split(",").map(tag => tag.trim())
-
-      notes = await knex("tags")
-      .select([
-        "notes.id",
-        "notes.title",
-        "notes.user_id"
-      ])
-      .where("notes.user_id", user_id)
-      .whereLike('notes.title', `%${title}%`)
-      .whereIn("name", filterTags)
-      .innerJoin("notes", "notes.id", "tags.note_id")
-      .groupBy("notes.id")
-      .orderBy("notes.created_at")
-    }else {
-      notes = await knex("notes")
-      .where({ user_id: user_id })
-      .whereLike('title', `%${title}%`)
-      .orderBy("created_at")
-    }
-
-    const userTags = await knex("tags").where({ user_id })
-
-    const notesWithTags = notes.map(note => {
-      const noteTags = userTags.filter(tag => tag.note_id === note.id)
-
-      return {
-        ...note,
-        tags: noteTags
-      }
-    })
-
-    return response.json(notesWithTags)
+    return response.json(notes)
   }
 
   async show(request, response) {
     const { id } = request.params
 
-    const note = await knex("notes").where({ id }).first()
-    const tags = await knex("tags").where({ note_id: id }).orderBy("name")
-    const links = await knex("links").where({ note_id: id }).orderBy("created_at")
+    const notesRepository = new NotesRepository()
+    const tagsRepository = new TagsRepository()
+    const linksRepository = new LinksRepository()
 
-    return response.json({
-      ...note,
-      tags,
-      links
-    })
+    const notesService = new NotesService(notesRepository, tagsRepository, linksRepository)
+
+    const note = await notesService.getNoteById(id)
+
+    return response.json(note)
   }
 
   async create(request, response) {
     const { title, description, tags, links } = request.body
     const user_id = request.user.id
 
+    const notesRepository = new NotesRepository()
+    const tagsRepository = new TagsRepository()
+    const linksRepository = new LinksRepository()
 
-    const [note_id] = await knex("notes").insert({
-      title,
-      description,
-      user_id
-    })
+    const notesService = new NotesService(notesRepository, tagsRepository, linksRepository)
 
-    if(links.length != 0) {
-      const linksInsert = links.map(link => {
-        return {
-          note_id,
-          url: link
-        }
-      })
 
-      await knex("links").insert(linksInsert)
-    }
-
-    if(tags.length != 0){
-      const tagsInsert = tags.map(tag => {
-        return {
-          note_id,
-          name: tag,
-          user_id
-        }
-      })
-  
-      await knex("tags").insert(tagsInsert)
-    }
+    await notesService.createNote({ user_id, title, description, tags, links })
 
     return response.status(201).json()
   }
@@ -97,7 +53,10 @@ class NotesController {
   async delete(request, response) {
     const { id } = request.params
 
-    await knex("notes").where({ id }).delete()
+    const notesRepository = new NotesRepository()
+    const notesService = new NotesService(notesRepository)
+
+    await notesService.deleteNoteById(id)
 
     return response.json()
   }

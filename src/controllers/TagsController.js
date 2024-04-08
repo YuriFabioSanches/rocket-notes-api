@@ -8,7 +8,7 @@ class TagsController {
     const tagsRepository = new TagsRepository()
     const tagsService = new TagsService(tagsRepository)
 
-    const tags = await tagsService.getAllTags(user_id)
+    const tags = await tagsService.getAllTagsByUserId(user_id)
     
     return response.json(tags)
   }
