@@ -1,4 +1,5 @@
 const sqliteConnection = require('../database/sqlite')
+const knex = require("../database/knex")
 
 class UserRepository {
   async getUserById(user_id) {
@@ -35,6 +36,12 @@ class UserRepository {
     )
 
     return {id: user.id}
+  }
+
+  async updateUserAvatar(user, user_id) {
+    await knex("users").update(user).where({ id: user_id })
+
+    return user.avatar
   }
 }
 
